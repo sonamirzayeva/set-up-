@@ -1,0 +1,140 @@
+import requests
+import json
+
+# Set up variables for authentication and report creation
+access_token = 'YOUR_ACCESS_TOKEN_HERE'
+workspace_id = 'YOUR_WORKSPACE_ID_HERE'
+dataset_id = 'YOUR_DATASET_ID_HERE'
+
+# Create report
+report = {
+    'name': 'My Power BI Report',
+    'defaultMode': 'View',
+    'targetWorkspace': {
+        'id': workspace_id
+    },
+    'datasetId': dataset_id,
+    'sections': [
+        {
+            'visualizations': [
+                {
+                    'type': 'table',
+                    'name': 'Table1',
+                    'data': {
+                        'source': {
+                            'type': 'odata',
+                            'sourceUrl': 'https://graph.microsoft.com/v1.0/me'
+                        },
+                        'mappings': {
+                            'displayName': {
+                                'expr': 'displayName'
+                            },
+                            'jobTitle': {
+                                'expr': 'jobTitle'
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
+
+# Create report in Power BI
+response = requests.post('https://api.powerbi.com/v1.0/myorg/reports', headers={
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + access_token
+}, data=json.dumps(report))
+
+# Print response and report URL
+if response.status_code == 202:
+    report_url = response.json().get('webUrl')
+    print(f"Report created successfully at {report_url}")
+else:
+    print(f"Failed to create report. Response: {response.content}")
+    # Set up variables for authentication and report creation
+access_token = 'YOUR_ACCESS_TOKEN_HERE'
+workspace_id = 'YOUR_WORKSPACE_ID_HERE'
+dataset_id = 'YOUR_DATASET_ID_HERE'
+
+# Create report
+report = {
+    'name': 'My Power BI Report',
+    'defaultMode': 'View',
+    'targetWorkspace': {
+        'id': workspace_id
+    },
+    'datasetId': dataset_id,
+    'sections': [
+        {
+            'visualizations': [
+                {
+                    'type': 'table',
+                    'name': 'Table1',
+                    'data': {
+                        'source': {
+                            'type': 'odata',
+                            'sourceUrl': 'https://graph.microsoft.com/v1.0/me'
+                        },
+                        'mappings': {
+                            'displayName': {
+                                'expr': 'displayName'
+                            },
+                            'jobTitle': {
+                                'expr': 'jobTitle'
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
+
+# Create report in Power BI
+response = requests.post('https://api.powerbi.com/v1.0/myorg/reports', headers={
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + access_token
+}, data=json.dumps(report))
+
+# Print response and report URL
+if response.status_code == 202:
+    report_url = response.json().get('webUrl')
+    print(f"Report created successfully at {report_url}")
+else:
+    print(f"Failed to create report. Response: {response.content}")
+
+# Get report ID
+report_id = response.json().get('id')
+
+# Get list of dashboards
+response = requests.get(f'https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}/dashboards', headers={
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + access_token
+})
+
+if response.status_code == 200:
+    dashboards = response.json().get('value')
+    dashboard_id = dashboards[0].get('id')
+    print(f"Dashboard ID: {dashboard_id}")
+else:
+    print(f"Failed to get list of dashboards. Response: {response.content}")
+
+# Add report to dashboard
+response = requests.post(f'https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}/dashboards/{dashboard_id}/tiles', headers={
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + access_token
+}, data=json.dumps({
+    'rowSpan': 1,
+    'colSpan': 1,
+    'title': 'My Report Tile',
+    'dashboardId': dashboard_id,
+    'reportId': report_id,
+    'tileType': 'Report'
+}))
+
+if response.status_code == 200:
+    tile_url = response.json().get('webUrl')
+    print(f"Report added to dashboard successfully at {tile_url}")
+else:
+    print(f"Failed to add report to dashboard. Response: {response.content}")
